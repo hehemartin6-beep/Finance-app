@@ -10,7 +10,20 @@
             Console.WriteLine("( 1 ) - Manage market");
             string adminChoice = Console.ReadLine();
 
-            if (adminChoice == "1") { Console.WriteLine("Manage market selected"); }
+            if (adminChoice == "1")
+            {
+                Console.WriteLine("( 1 ) - Create active");
+                Console.WriteLine("( 2 ) - Manage active");
+                Console.WriteLine("( 3 ) - Deactivate active");
+                Console.WriteLine("( 4 ) - Display detail of active");
+                string manageMarketChoice = Console.ReadLine();
+
+                if (manageMarketChoice == "1")      { Console.WriteLine("Create active selected"); }
+                else if (manageMarketChoice == "2") { Console.WriteLine("Manage active selected"); }
+                else if (manageMarketChoice == "3") { Console.WriteLine("Deactivate active selected"); }
+                else if (manageMarketChoice == "4") { Console.WriteLine("Display detail of active selected"); }
+                else { throw new Exception("Invalid option"); }
+            }
             else { throw new Exception("Invalid option"); }
         }
         else if (userRole == "user")
