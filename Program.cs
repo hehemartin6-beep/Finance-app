@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 void Exit()
 {
@@ -13,6 +14,39 @@ bool HandleNavigation(string input)
     return false;
 }
 
+List<(string Title, string Description, string Date)> newsList = new List<(string, string, string)>();
+
+void AddNews()
+{
+    Console.WriteLine("\nEnter news title:");
+    string title = Console.ReadLine();
+
+    Console.WriteLine("Enter news description:");
+    string description = Console.ReadLine();
+
+    string date = DateTime.Now.ToString("dd/MM/yyyy");
+
+    newsList.Add((title, description, date));
+    Console.WriteLine("News added successfully.");
+}
+
+void DisplayNews()
+{
+    if (newsList.Count == 0)
+    {
+        Console.WriteLine("No news available.");
+        return;
+    }
+
+    for (int i = 0; i < newsList.Count; i++)
+    {
+        Console.WriteLine($"\n--- News {i + 1} ---");
+        Console.WriteLine($"Title       : {newsList[i].Title}");
+        Console.WriteLine($"Description : {newsList[i].Description}");
+        Console.WriteLine($"Date        : {newsList[i].Date}");
+    }
+}
+
 while (true)
 {
     Console.WriteLine("\nAre you a User or an Admin? (ex! to exit)");
@@ -25,6 +59,7 @@ while (true)
         while (true)
         {
             Console.WriteLine("\n( 1 ) - Manage market");
+            Console.WriteLine("( 2 ) - Add news");
             Console.WriteLine("( back ) - Go back | ( ex! ) - Exit");
             string adminChoice = Console.ReadLine().ToLower();
 
@@ -50,6 +85,7 @@ while (true)
                     else { Console.WriteLine("Invalid option. Please try again."); }
                 }
             }
+            else if (adminChoice == "2") { AddNews(); }
             else { Console.WriteLine("Invalid option. Please try again."); }
         }
     }
@@ -69,7 +105,7 @@ while (true)
             if (userChoice == "1")      { Console.WriteLine("Manage portfolio selected"); }
             else if (userChoice == "2") { Console.WriteLine("Deposits and withdrawals selected"); }
             else if (userChoice == "3") { Console.WriteLine("Growth simulation selected"); }
-            else if (userChoice == "4") { Console.WriteLine("News selected"); }
+            else if (userChoice == "4") { DisplayNews(); }
             else { Console.WriteLine("Invalid option. Please try again."); }
         }
     }
