@@ -26,6 +26,66 @@ bool HandleNavigation(string input)
     return false;
 }
 
+// ─── Input Validation Helpers ─────────────────────────────────────────────────
+
+decimal ReadPositiveDecimal(string prompt)
+{
+    while (true)
+    {
+        Console.WriteLine(prompt);
+        string input = Console.ReadLine();
+        if (decimal.TryParse(input, out decimal value) && value > 0)
+            return value;
+        Console.WriteLine("Invalid amount. Must be a positive number. Please try again.");
+    }
+}
+
+int ReadPositiveInt(string prompt)
+{
+    while (true)
+    {
+        Console.WriteLine(prompt);
+        string input = Console.ReadLine();
+        if (int.TryParse(input, out int value) && value > 0)
+            return value;
+        Console.WriteLine("Invalid number. Must be a positive whole number. Please try again.");
+    }
+}
+
+DateTime ReadFutureDate(string prompt)
+{
+    DateTime maxDate = DateTime.Today.AddYears(150);
+
+    while (true)
+    {
+        Console.WriteLine(prompt);
+        string input = Console.ReadLine();
+
+        if (!DateTime.TryParseExact(input, "dd.MM.yyyy",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,
+            out DateTime date))
+        {
+            Console.WriteLine("Invalid date format or date does not exist. Please use dd.MM.yyyy (e.g. 25.12.2030).");
+            continue;
+        }
+
+        if (date < DateTime.Today)
+        {
+            Console.WriteLine("Date must be in the present or future. Please try again.");
+            continue;
+        }
+
+        if (date > maxDate)
+        {
+            Console.WriteLine($"Date cannot be more than 150 years from today (max: {maxDate:dd.MM.yyyy}). Please try again.");
+            continue;
+        }
+
+        return date;
+    }
+}
+
 // ─── Auth Functions ──────────────────────────────────────────────────────────
 
 User Login()
@@ -126,6 +186,104 @@ void DisplayNews()
     }
 }
 
+// ─── Goal Functions ───────────────────────────────────────────────────────────
+
+void GoalMenu()
+{
+    while (true)
+    {
+        Console.WriteLine("\n( 1 ) - Set goal: Save X by date Y");
+        Console.WriteLine("( 2 ) - Set goal: Passive income Z/month");
+        Console.WriteLine("( back ) - Go back | ( ex! ) - Exit");
+        string goalChoice = Console.ReadLine().ToLower();
+
+        if (HandleNavigation(goalChoice)) { break; }
+
+        if (goalChoice == "1")      { SetSavingsGoal(); }
+        else if (goalChoice == "2") { SetRentGoal(); }
+        else { Console.WriteLine("Invalid option. Please try again."); }
+    }
+}
+
+void SetSavingsGoal()
+{
+    decimal  targetAmount = ReadPositiveDecimal("\nEnter target amount (X):");
+    DateTime targetDate   = ReadFutureDate("Enter target date (dd.MM.yyyy):");
+    SimulateAndEvaluateSavings(targetAmount, targetDate);
+}
+
+void SetRentGoal()
+{
+    decimal  monthlyRent = ReadPositiveDecimal("\nEnter desired monthly passive income (Z):");
+    DateTime fromDate    = ReadFutureDate("Enter start date for passive income (dd.MM.yyyy):");
+    SimulateAndEvaluateRent(monthlyRent, fromDate);
+}
+
+void SimulateAndEvaluateSavings(decimal target, DateTime targetDate)
+{
+    decimal startValue           = ReadPositiveDecimal("Enter starting portfolio value:");
+    decimal monthlyContribution  = ReadPositiveDecimal("Enter monthly contribution:");
+
+    int months          = Math.Max(0, ((targetDate.Year - DateTime.Today.Year) * 12) + targetDate.Month - DateTime.Today.Month);
+    decimal meanReturn  = 0.005m;
+    decimal volatility  = 0.02m;
+    int simulations     = 1000;
+    int successCount    = 0;
+    Random rng          = new Random();
+
+    for (int sim = 0; sim < simulations; sim++)
+    {
+        decimal value = startValue;
+        for (int m = 0; m < months; m++)
+        {
+            decimal randomShock = (decimal)SampleNormal(rng, (double)meanReturn, (double)volatility);
+            value = value * (1 + randomShock) + monthlyContribution;
+        }
+        if (value >= target) successCount++;
+    }
+
+    decimal probability = (decimal)successCount / simulations * 100;
+    Console.WriteLine($"Likelihood of achieving said goal: {probability:F1} %");
+}
+
+void SimulateAndEvaluateRent(decimal rent, DateTime fromDate)
+{
+    decimal startValue  = ReadPositiveDecimal("Enter starting portfolio value:");
+    int     months      = ReadPositiveInt("Enter desired duration of passive income in months:");
+
+    decimal meanReturn  = 0.005m;
+    decimal volatility  = 0.02m;
+    int simulations     = 1000;
+    int successCount    = 0;
+    Random rng          = new Random();
+
+    for (int sim = 0; sim < simulations; sim++)
+    {
+        decimal value = startValue;
+        bool survived = true;
+        for (int m = 0; m < months; m++)
+        {
+            decimal randomShock = (decimal)SampleNormal(rng, (double)meanReturn, (double)volatility);
+            value = value * (1 + randomShock) - rent;
+            if (value < 0) { survived = false; break; }
+        }
+        if (survived) successCount++;
+    }
+
+    decimal probability = (decimal)successCount / simulations * 100;
+    Console.WriteLine($"Likelihood of passive income lasting the desired duration: {probability:F1} %");
+}
+
+// ─── Box-Muller normal distribution sampler ──────────────────────────────────
+
+double SampleNormal(Random rng, double mean, double stddev)
+{
+    double u1            = 1.0 - rng.NextDouble();
+    double u2            = 1.0 - rng.NextDouble();
+    double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+    return mean + stddev * randStdNormal;
+}
+
 // ─── Entry Point ─────────────────────────────────────────────────────────────
 
 while (true)
@@ -184,6 +342,7 @@ while (true)
                 Console.WriteLine("( 2 ) - Deposits and withdrawals");
                 Console.WriteLine("( 3 ) - Growth simulation");
                 Console.WriteLine("( 4 ) - News");
+                Console.WriteLine("( 5 ) - Goal planning (saving up / passive income)");
                 Console.WriteLine("( back ) - Go back | ( ex! ) - Exit");
                 string userChoice = Console.ReadLine().ToLower();
 
@@ -193,6 +352,7 @@ while (true)
                 else if (userChoice == "2") { Console.WriteLine("Deposits and withdrawals selected"); }
                 else if (userChoice == "3") { Console.WriteLine("Growth simulation selected"); }
                 else if (userChoice == "4") { DisplayNews(); }
+                else if (userChoice == "5") { GoalMenu(); }
                 else { Console.WriteLine("Invalid option. Please try again."); }
             }
         }
@@ -200,6 +360,8 @@ while (true)
     else if (entryChoice == "2") { Register(); }
     else { Console.WriteLine("Invalid option. Please try again."); }
 }
+
+// ─── Database Models ─────────────────────────────────────────────────────────
 
 class User
 {
