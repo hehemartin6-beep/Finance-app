@@ -5,16 +5,6 @@ Potřebné balíčky:
 
 !! pokud při přidávání nebo zobrazovaní dat hází error, tak musíte vymazat databázi ( app ) aby to vytvo5ilo správně tabulky. Dole je ukázka erroru.
 
-
-
-2. Kontrolní bod
-   Spasov:
-   Funkce admina ( přidání assetů, risků) : 2H
-   
-   Manuylov:
-   Přidání vkladů a výběru s validací u usera : 1.5H
-
-
    Error:
      Unhandled exception. Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 1: 'no such table: Portfolios'.
    at Microsoft.Data.Sqlite.SqliteException.ThrowExceptionForRC(Int32 rc, sqlite3 db)
