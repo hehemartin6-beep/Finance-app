@@ -9,10 +9,10 @@ Potřebné balíčky:
 
 2. Kontrolní bod
    Spasov:
-   Funkce admina ( přidání assetů, risků)
+   Funkce admina ( přidání assetů, risků) : 2H
    
    Manuylov:
-   Přidání vkladů a výběru s validací u usera
+   Přidání vkladů a výběru s validací u usera : 1.5H
 
 
    Error:
