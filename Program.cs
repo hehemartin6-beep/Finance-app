@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using BC = BCrypt.Net.BCrypt;
-
+//
 // ─── Main Program ────────────────────────────────────────────────────────────
 
 using var db = new AppDbContext();
@@ -151,6 +151,117 @@ void Register()
     }
 }
 
+// ─── Deposits & Withdrawals ───────────────────────────────────────────────────
+
+Portfolio GetOrCreatePortfolio(int userId)
+{
+    var portfolio = db.Portfolios.FirstOrDefault(p => p.UserId == userId);
+    if (portfolio == null)
+    {
+        portfolio = new Portfolio
+        {
+            UserId        = userId,
+            Balance       = 0,
+            MonthlyDeposit = 0,
+            UpdatedAt     = DateTime.Now.ToString("dd/MM/yyyy")
+        };
+        db.Portfolios.Add(portfolio);
+        db.SaveChanges();
+    }
+    return portfolio;
+}
+
+void DepositsAndWithdrawalsMenu(int userId)
+{
+    var portfolio = GetOrCreatePortfolio(userId);
+
+    while (true)
+    {
+        Console.WriteLine($"\nCurrent balance: {portfolio.Balance:F2}");
+        if (portfolio.MonthlyDeposit > 0)
+            Console.WriteLine($"Monthly recurring deposit: {portfolio.MonthlyDeposit:F2}");
+
+        Console.WriteLine("\n( 1 ) - One-time deposit");
+        Console.WriteLine("( 2 ) - Set monthly recurring deposit");
+        Console.WriteLine("( 3 ) - Withdrawal");
+        Console.WriteLine("( back ) - Go back | ( ex! ) - Exit");
+
+        string choice = Console.ReadLine().ToLower();
+        if (HandleNavigation(choice)) break;
+
+        switch (choice)
+        {
+            case "1": OneTimeDeposit(portfolio);    break;
+            case "2": SetMonthlyDeposit(portfolio); break;
+            case "3": Withdrawal(portfolio); break;
+            default:  Console.WriteLine("Invalid option. Please try again."); break;
+        }
+    }
+}
+
+void OneTimeDeposit(Portfolio portfolio)
+{
+    decimal amount = ReadPositiveDecimal("\nEnter deposit amount:");
+
+    portfolio.Balance   += amount;
+    portfolio.UpdatedAt  = DateTime.Now.ToString("dd/MM/yyyy");
+    db.SaveChanges();
+
+    Console.WriteLine($"Deposit of {amount:F2} successful. New balance: {portfolio.Balance:F2}");
+}
+
+void SetMonthlyDeposit(Portfolio portfolio)
+{
+    Console.WriteLine($"\nCurrent monthly deposit: {portfolio.MonthlyDeposit:F2}");
+    Console.WriteLine("Enter new monthly deposit amount (0 to cancel recurring deposit):");
+
+    string input = Console.ReadLine();
+    if (!decimal.TryParse(input, out decimal amount) || amount < 0)
+    {
+        Console.WriteLine("Invalid amount. Must be 0 or a positive number.");
+        return;
+    }
+
+    portfolio.MonthlyDeposit = amount;
+    portfolio.UpdatedAt      = DateTime.Now.ToString("dd/MM/yyyy");
+    db.SaveChanges();
+
+    if (amount == 0)
+        Console.WriteLine("Monthly recurring deposit cancelled.");
+    else
+        Console.WriteLine($"Monthly recurring deposit set to {amount:F2}.");
+}
+
+void Withdrawal(Portfolio portfolio)
+{
+    if (portfolio.Balance <= 0)
+    {
+        Console.WriteLine("\nYour balance is 0. Nothing to withdraw.");
+        return;
+    }
+
+    Console.WriteLine($"\nAvailable balance: {portfolio.Balance:F2}");
+    Console.WriteLine("Enter withdrawal amount:");
+
+    string input = Console.ReadLine();
+    if (!decimal.TryParse(input, out decimal amount) || amount <= 0)
+    {
+        Console.WriteLine("Invalid amount. Must be a positive number.");
+        return;
+    }
+
+    if (amount > portfolio.Balance)
+    {
+        Console.WriteLine($"Insufficient funds. You requested {amount:F2} but your balance is only {portfolio.Balance:F2}.");
+        return;
+    }
+
+    portfolio.Balance   -= amount;
+    portfolio.UpdatedAt  = DateTime.Now.ToString("dd/MM/yyyy");
+    db.SaveChanges();
+
+    Console.WriteLine($"Withdrawal of {amount:F2} successful. Remaining balance: {portfolio.Balance:F2}");
+}
 // ─── News Functions ──────────────────────────────────────────────────────────
 
 void AddNews()
@@ -724,12 +835,12 @@ while (true)
 
                 switch (userChoice)
                 {
-                    case "1": Console.WriteLine("Manage portfolio selected");        break;
-                    case "2": Console.WriteLine("Deposits and withdrawals selected"); break;
-                    case "3": Console.WriteLine("Growth simulation selected");       break;
+                    case "1": Console.WriteLine("Manage portfolio selected");         break;
+                    case "2": DepositsAndWithdrawalsMenu(loggedInUser.Id);            break; 
+                    case "3": Console.WriteLine("Growth simulation selected");        break;
                     case "4": DisplayNews();                                          break;
                     case "5": DisplayRisks();                                         break;
-                    case "6": DisplayAssets(showInactive: false);                    break;
+                    case "6": DisplayAssets(showInactive: false);                     break;
                     case "7": GoalMenu();                                             break;
                     default:  Console.WriteLine("Invalid option. Please try again."); break;
                 }
@@ -779,12 +890,22 @@ class Risk
     public string CreatedAt   { get; set; }
 }
 
+class Portfolio
+{
+    public int     Id                  { get; set; }
+    public int     UserId              { get; set; }
+    public decimal Balance             { get; set; }
+    public decimal MonthlyDeposit      { get; set; }  // 0 = not set
+    public string  UpdatedAt           { get; set; }
+}
 class AppDbContext : DbContext
 {
     public DbSet<User>     Users  { get; set; }
     public DbSet<NewsItem> News   { get; set; }
     public DbSet<Asset>    Assets { get; set; }
     public DbSet<Risk>     Risks  { get; set; }
+    
+    public DbSet<Portfolio> Portfolios { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite("Data Source=app.db");
