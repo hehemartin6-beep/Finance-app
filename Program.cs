@@ -262,6 +262,7 @@ void Withdrawal(Portfolio portfolio)
 
     Console.WriteLine($"Withdrawal of {amount:F2} successful. Remaining balance: {portfolio.Balance:F2}");
 }
+
 // ─── News Functions ──────────────────────────────────────────────────────────
 
 void AddNews()
@@ -781,6 +782,391 @@ double SampleNormal(Random rng, double mean, double stddev)
     return mean + stddev * randStdNormal;
 }
 
+// ─── Portfolio Management ─────────────────────────────────────────────────────
+
+void ManagePortfolioMenu(int userId)
+{
+    while (true)
+    {
+        // Show all portfolios for this user
+        var portfolios = db.InvestmentPortfolios
+            .Where(p => p.UserId == userId)
+            .ToList();
+
+        if (portfolios.Count == 0)
+        {
+            Console.WriteLine("\nYou have no investment portfolios yet.");
+            Console.WriteLine("( 1 ) - Create new portfolio");
+            Console.WriteLine("( back ) - Go back | ( ex! ) - Exit");
+            string firstChoice = Console.ReadLine().ToLower();
+            if (HandleNavigation(firstChoice)) break;
+            if (firstChoice == "1") CreateInvestmentPortfolio(userId);
+            else Console.WriteLine("Invalid option.");
+            continue;
+        }
+
+        Console.WriteLine("\n═══ Your Investment Portfolios ═══");
+        foreach (var p in portfolios)
+        {
+            string rebalLabel = p.RebalancingMode switch
+            {
+                "monthly"   => "Monthly",
+                "quarterly" => "Quarterly",
+                _           => "Off"
+            };
+            Console.WriteLine($"  (ID: {p.Id}) {p.Name}  |  Rebalancing: {rebalLabel}  |  Created: {p.CreatedAt}");
+        }
+
+        Console.WriteLine("\n( 1 ) - Create new portfolio");
+        Console.WriteLine("( 2 ) - Open a portfolio");
+        Console.WriteLine("( back ) - Go back | ( ex! ) - Exit");
+        string choice = Console.ReadLine().ToLower();
+        if (HandleNavigation(choice)) break;
+
+        switch (choice)
+        {
+            case "1": CreateInvestmentPortfolio(userId); break;
+            case "2": SelectAndOpenPortfolio(userId);    break;
+            default:  Console.WriteLine("Invalid option. Please try again."); break;
+        }
+    }
+}
+
+void CreateInvestmentPortfolio(int userId)
+{
+    Console.WriteLine("\nEnter portfolio name:");
+    string name = Console.ReadLine();
+
+    if (string.IsNullOrWhiteSpace(name))
+    {
+        Console.WriteLine("Portfolio name cannot be empty.");
+        return;
+    }
+
+    var portfolio = new InvestmentPortfolio
+    {
+        UserId          = userId,
+        Name            = name,
+        RebalancingMode = "off",
+        CreatedAt       = DateTime.Now.ToString("dd/MM/yyyy")
+    };
+
+    db.InvestmentPortfolios.Add(portfolio);
+    db.SaveChanges();
+    Console.WriteLine($"Portfolio '{name}' created successfully.");
+}
+
+void SelectAndOpenPortfolio(int userId)
+{
+    var portfolios = db.InvestmentPortfolios.Where(p => p.UserId == userId).ToList();
+    if (portfolios.Count == 0) { Console.WriteLine("No portfolios found."); return; }
+
+    Console.WriteLine("\nEnter portfolio ID to open (or 'back'):");
+    string input = Console.ReadLine().ToLower();
+    if (HandleNavigation(input)) return;
+
+    if (!int.TryParse(input, out int id)) { Console.WriteLine("Invalid ID."); return; }
+
+    var portfolio = portfolios.FirstOrDefault(p => p.Id == id);
+    if (portfolio == null) { Console.WriteLine("Portfolio not found."); return; }
+
+    OpenPortfolioMenu(portfolio);
+}
+
+void OpenPortfolioMenu(InvestmentPortfolio portfolio)
+{
+    while (true)
+    {
+        Console.WriteLine($"\n══════════════════════════════════");
+        Console.WriteLine($" Portfolio: {portfolio.Name}");
+        Console.WriteLine($"══════════════════════════════════");
+
+        Console.WriteLine("\n( 1 ) - View portfolio detail");
+        Console.WriteLine("( 2 ) - Add asset");
+        Console.WriteLine("( 3 ) - Remove asset");
+        Console.WriteLine("( 4 ) - Set asset weights (%)");
+        Console.WriteLine("( 5 ) - Set rebalancing");
+        Console.WriteLine("( back ) - Go back | ( ex! ) - Exit");
+
+        string choice = Console.ReadLine().ToLower();
+        if (HandleNavigation(choice)) break;
+
+        switch (choice)
+        {
+            case "1": DisplayPortfolioDetail(portfolio);  break;
+            case "2": AddAssetToPortfolio(portfolio);     break;
+            case "3": RemoveAssetFromPortfolio(portfolio);break;
+            case "4": SetAssetWeights(portfolio);         break;
+            case "5": SetRebalancing(portfolio);          break;
+            default:  Console.WriteLine("Invalid option. Please try again."); break;
+        }
+    }
+}
+
+void DisplayPortfolioDetail(InvestmentPortfolio portfolio)
+{
+    var items = db.PortfolioAssets
+        .Where(pa => pa.InvestmentPortfolioId == portfolio.Id)
+        .ToList();
+
+    string rebalLabel = portfolio.RebalancingMode switch
+    {
+        "monthly"   => "Monthly",
+        "quarterly" => "Quarterly",
+        _           => "Off"
+    };
+
+    Console.WriteLine($"\n══════════════════════════════════════════════");
+    Console.WriteLine($" Portfolio Detail — {portfolio.Name}");
+    Console.WriteLine($"══════════════════════════════════════════════");
+    Console.WriteLine($" Rebalancing  : {rebalLabel}");
+    Console.WriteLine($" Created      : {portfolio.CreatedAt}");
+
+    if (items.Count == 0)
+    {
+        Console.WriteLine("\n No assets in this portfolio yet.");
+        return;
+    }
+
+    decimal totalWeight = items.Sum(i => i.WeightPercent);
+    decimal totalValue  = 0;
+
+    Console.WriteLine($"\n {"Asset",-12} {"Type",-12} {"Weight%",8} {"Price",10} {"Units",8} {"Value",12}");
+    Console.WriteLine($" {new string('-', 66)}");
+
+    foreach (var item in items)
+    {
+        var asset = db.Assets.Find(item.AssetId);
+        if (asset == null) continue;
+
+        decimal value = asset.Price * item.Units;
+        totalValue += value;
+
+        Console.WriteLine($" {asset.Name,-12} {asset.Type,-12} {item.WeightPercent,7:F1}% {asset.Price,10:F2} {item.Units,8:F4} {value,12:F2}");
+    }
+
+    Console.WriteLine($" {new string('-', 66)}");
+    Console.WriteLine($" {"TOTAL",-26} {totalWeight,7:F1}%  {"",10} {"",8} {totalValue,12:F2}");
+
+    if (Math.Abs(totalWeight - 100m) > 0.01m)
+        Console.WriteLine($"\n ⚠ Warning: weights sum to {totalWeight:F1}% (should be 100%).");
+    else
+        Console.WriteLine($"\n ✓ Weights are balanced (100%).");
+}
+
+void AddAssetToPortfolio(InvestmentPortfolio portfolio)
+{
+    var activeAssets = db.Assets.Where(a => a.IsActive).ToList();
+    if (activeAssets.Count == 0)
+    {
+        Console.WriteLine("No active assets available to add.");
+        return;
+    }
+
+    // Show only assets not already in portfolio
+    var existingIds = db.PortfolioAssets
+        .Where(pa => pa.InvestmentPortfolioId == portfolio.Id)
+        .Select(pa => pa.AssetId)
+        .ToHashSet();
+
+    var available = activeAssets.Where(a => !existingIds.Contains(a.Id)).ToList();
+
+    if (available.Count == 0)
+    {
+        Console.WriteLine("All active assets are already in this portfolio.");
+        return;
+    }
+
+    Console.WriteLine("\nAvailable assets:");
+    foreach (var a in available)
+        Console.WriteLine($"  (ID: {a.Id}) {a.Name} [{a.Type}]  Price: {a.Price:F2}");
+
+    Console.WriteLine("\nEnter asset ID to add (or 'back'):");
+    string input = Console.ReadLine().ToLower();
+    if (HandleNavigation(input)) return;
+
+    if (!int.TryParse(input, out int assetId))
+    {
+        Console.WriteLine("Invalid ID.");
+        return;
+    }
+
+    var asset = available.FirstOrDefault(a => a.Id == assetId);
+    if (asset == null)
+    {
+        Console.WriteLine("Asset not found or already in portfolio.");
+        return;
+    }
+
+    Console.WriteLine($"Enter number of units for {asset.Name} (e.g. 1.5):");
+    string unitsInput = Console.ReadLine();
+    if (!decimal.TryParse(unitsInput, out decimal units) || units <= 0)
+    {
+        Console.WriteLine("Invalid units. Must be a positive number.");
+        return;
+    }
+
+    var pa = new PortfolioAsset
+    {
+        InvestmentPortfolioId = portfolio.Id,
+        AssetId               = asset.Id,
+        Units                 = units,
+        WeightPercent         = 0   // weight to be set separately
+    };
+
+    db.PortfolioAssets.Add(pa);
+    db.SaveChanges();
+    Console.WriteLine($"Asset '{asset.Name}' ({units} units) added to portfolio.");
+    Console.WriteLine("Remember to update weights (option 4) so they sum to 100%.");
+}
+
+void RemoveAssetFromPortfolio(InvestmentPortfolio portfolio)
+{
+    var items = db.PortfolioAssets
+        .Where(pa => pa.InvestmentPortfolioId == portfolio.Id)
+        .ToList();
+
+    if (items.Count == 0)
+    {
+        Console.WriteLine("No assets in this portfolio.");
+        return;
+    }
+
+    Console.WriteLine("\nAssets in portfolio:");
+    foreach (var item in items)
+    {
+        var asset = db.Assets.Find(item.AssetId);
+        if (asset != null)
+            Console.WriteLine($"  (AssetID: {asset.Id}) {asset.Name}  Units: {item.Units:F4}  Weight: {item.WeightPercent:F1}%");
+    }
+
+    Console.WriteLine("\nEnter asset ID to remove (or 'back'):");
+    string input = Console.ReadLine().ToLower();
+    if (HandleNavigation(input)) return;
+
+    if (!int.TryParse(input, out int assetId))
+    {
+        Console.WriteLine("Invalid ID.");
+        return;
+    }
+
+    var pa = items.FirstOrDefault(i => i.AssetId == assetId);
+    if (pa == null)
+    {
+        Console.WriteLine("Asset not found in this portfolio.");
+        return;
+    }
+
+    var assetName = db.Assets.Find(assetId)?.Name ?? assetId.ToString();
+    Console.WriteLine($"Are you sure you want to remove '{assetName}' from the portfolio? (yes/no):");
+    string confirm = Console.ReadLine().ToLower();
+
+    if (confirm == "yes")
+    {
+        db.PortfolioAssets.Remove(pa);
+        db.SaveChanges();
+        Console.WriteLine($"Asset '{assetName}' removed from portfolio.");
+        Console.WriteLine("Remember to re-check weights (option 4) so they still sum to 100%.");
+    }
+    else
+    {
+        Console.WriteLine("Removal cancelled.");
+    }
+}
+
+void SetAssetWeights(InvestmentPortfolio portfolio)
+{
+    var items = db.PortfolioAssets
+        .Where(pa => pa.InvestmentPortfolioId == portfolio.Id)
+        .ToList();
+
+    if (items.Count == 0)
+    {
+        Console.WriteLine("No assets in this portfolio. Add assets first.");
+        return;
+    }
+
+    Console.WriteLine($"\nSetting weights for {items.Count} asset(s). Weights must sum to exactly 100%.");
+    Console.WriteLine("Enter weight (%) for each asset. Leave blank to keep current value.\n");
+
+    var newWeights = new Dictionary<int, decimal>();
+
+    foreach (var item in items)
+    {
+        var asset = db.Assets.Find(item.AssetId);
+        string assetName = asset?.Name ?? $"Asset {item.AssetId}";
+
+        while (true)
+        {
+            Console.WriteLine($"  {assetName} (current: {item.WeightPercent:F1}%) — enter new weight %:");
+            string input = Console.ReadLine().Trim();
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                newWeights[item.AssetId] = item.WeightPercent;
+                break;
+            }
+
+            if (decimal.TryParse(input, out decimal w) && w >= 0 && w <= 100)
+            {
+                newWeights[item.AssetId] = w;
+                break;
+            }
+
+            Console.WriteLine("  Invalid input. Enter a number between 0 and 100.");
+        }
+    }
+
+    decimal total = newWeights.Values.Sum();
+
+    if (Math.Abs(total - 100m) > 0.01m)
+    {
+        Console.WriteLine($"\n✗ Error: weights sum to {total:F1}% — must be exactly 100%. No changes saved.");
+        Console.WriteLine("  Tip: adjust the values so they add up to 100% and try again.");
+        return;
+    }
+
+    // Apply
+    foreach (var item in items)
+    {
+        item.WeightPercent = newWeights[item.AssetId];
+    }
+
+    db.SaveChanges();
+    Console.WriteLine($"\n✓ Weights saved successfully (total: {total:F1}%).");
+}
+
+void SetRebalancing(InvestmentPortfolio portfolio)
+{
+    Console.WriteLine($"\nCurrent rebalancing mode: {portfolio.RebalancingMode.ToUpper()}");
+    Console.WriteLine("\nSelect rebalancing mode:");
+    Console.WriteLine("( 1 ) - Off");
+    Console.WriteLine("( 2 ) - Monthly");
+    Console.WriteLine("( 3 ) - Quarterly");
+    Console.WriteLine("( back ) - Cancel");
+
+    string choice = Console.ReadLine().ToLower();
+    if (HandleNavigation(choice)) return;
+
+    string newMode = choice switch
+    {
+        "1" => "off",
+        "2" => "monthly",
+        "3" => "quarterly",
+        _   => null
+    };
+
+    if (newMode == null)
+    {
+        Console.WriteLine("Invalid option. No changes made.");
+        return;
+    }
+
+    portfolio.RebalancingMode = newMode;
+    db.SaveChanges();
+    Console.WriteLine($"Rebalancing set to: {newMode.ToUpper()}.");
+}
+
 // ─── Entry Point ─────────────────────────────────────────────────────────────
 
 while (true)
@@ -835,13 +1221,13 @@ while (true)
 
                 switch (userChoice)
                 {
-                    case "1": Console.WriteLine("Manage portfolio selected");         break;
-                    case "2": DepositsAndWithdrawalsMenu(loggedInUser.Id);            break; 
-                    case "3": Console.WriteLine("Growth simulation selected");        break;
-                    case "4": DisplayNews();                                          break;
-                    case "5": DisplayRisks();                                         break;
-                    case "6": DisplayAssets(showInactive: false);                     break;
-                    case "7": GoalMenu();                                             break;
+                    case "1": ManagePortfolioMenu(loggedInUser.Id);               break;
+                    case "2": DepositsAndWithdrawalsMenu(loggedInUser.Id);         break;
+                    case "3": Console.WriteLine("Growth simulation selected");     break;
+                    case "4": DisplayNews();                                        break;
+                    case "5": DisplayRisks();                                       break;
+                    case "6": DisplayAssets(showInactive: false);                   break;
+                    case "7": GoalMenu();                                           break;
                     default:  Console.WriteLine("Invalid option. Please try again."); break;
                 }
             }
@@ -898,14 +1284,49 @@ class Portfolio
     public decimal MonthlyDeposit      { get; set; }  // 0 = not set
     public string  UpdatedAt           { get; set; }
 }
+
+/// <summary>
+/// Named investment portfolio with asset allocation and rebalancing settings.
+/// </summary>
+class InvestmentPortfolio
+{
+    public int    Id                { get; set; }
+    public int    UserId            { get; set; }
+    public string Name              { get; set; }
+    /// <summary>off | monthly | quarterly</summary>
+    public string RebalancingMode   { get; set; } = "off";
+    public string CreatedAt         { get; set; }
+
+    // Navigation
+    public List<PortfolioAsset> PortfolioAssets { get; set; } = new();
+}
+
+/// <summary>
+/// Join table: one entry per asset in an InvestmentPortfolio.
+/// </summary>
+class PortfolioAsset
+{
+    public int     Id                    { get; set; }
+    public int     InvestmentPortfolioId { get; set; }
+    public int     AssetId               { get; set; }
+    public decimal Units                 { get; set; }
+    /// <summary>Target allocation weight in percent (0–100). All rows for a portfolio must sum to 100.</summary>
+    public decimal WeightPercent         { get; set; }
+
+    // Navigation
+    public InvestmentPortfolio InvestmentPortfolio { get; set; }
+    public Asset               Asset               { get; set; }
+}
+
 class AppDbContext : DbContext
 {
-    public DbSet<User>     Users  { get; set; }
-    public DbSet<NewsItem> News   { get; set; }
-    public DbSet<Asset>    Assets { get; set; }
-    public DbSet<Risk>     Risks  { get; set; }
-    
-    public DbSet<Portfolio> Portfolios { get; set; }
+    public DbSet<User>                Users                { get; set; }
+    public DbSet<NewsItem>            News                 { get; set; }
+    public DbSet<Asset>               Assets               { get; set; }
+    public DbSet<Risk>                Risks                { get; set; }
+    public DbSet<Portfolio>           Portfolios           { get; set; }
+    public DbSet<InvestmentPortfolio> InvestmentPortfolios { get; set; }
+    public DbSet<PortfolioAsset>      PortfolioAssets      { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite("Data Source=app.db");
