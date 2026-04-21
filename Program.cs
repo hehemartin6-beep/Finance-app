@@ -19,7 +19,7 @@ void Exit()
 
 bool HandleNavigation(string input)
 {
-    if (input == "ex!")  { Exit(); }
+    if (input == "ex!") { Exit(); }
     if (input == "back") { return true; }
     return false;
 }
@@ -139,9 +139,9 @@ void Register()
 
         User newUser = new User
         {
-            Username     = username,
+            Username = username,
             PasswordHash = BC.HashPassword(password),
-            Role         = role
+            Role = role
         };
 
         db.Users.Add(newUser);
@@ -160,10 +160,10 @@ Portfolio GetOrCreatePortfolio(int userId)
     {
         portfolio = new Portfolio
         {
-            UserId        = userId,
-            Balance       = 0,
+            UserId = userId,
+            Balance = 0,
             MonthlyDeposit = 0,
-            UpdatedAt     = DateTime.Now.ToString("dd/MM/yyyy")
+            UpdatedAt = DateTime.Now.ToString("dd/MM/yyyy")
         };
         db.Portfolios.Add(portfolio);
         db.SaveChanges();
@@ -191,10 +191,10 @@ void DepositsAndWithdrawalsMenu(int userId)
 
         switch (choice)
         {
-            case "1": OneTimeDeposit(portfolio);    break;
+            case "1": OneTimeDeposit(portfolio); break;
             case "2": SetMonthlyDeposit(portfolio); break;
             case "3": Withdrawal(portfolio); break;
-            default:  Console.WriteLine("Invalid option. Please try again."); break;
+            default: Console.WriteLine("Invalid option. Please try again."); break;
         }
     }
 }
@@ -203,8 +203,8 @@ void OneTimeDeposit(Portfolio portfolio)
 {
     decimal amount = ReadPositiveDecimal("\nEnter deposit amount:");
 
-    portfolio.Balance   += amount;
-    portfolio.UpdatedAt  = DateTime.Now.ToString("dd/MM/yyyy");
+    portfolio.Balance += amount;
+    portfolio.UpdatedAt = DateTime.Now.ToString("dd/MM/yyyy");
     db.SaveChanges();
 
     Console.WriteLine($"Deposit of {amount:F2} successful. New balance: {portfolio.Balance:F2}");
@@ -223,7 +223,7 @@ void SetMonthlyDeposit(Portfolio portfolio)
     }
 
     portfolio.MonthlyDeposit = amount;
-    portfolio.UpdatedAt      = DateTime.Now.ToString("dd/MM/yyyy");
+    portfolio.UpdatedAt = DateTime.Now.ToString("dd/MM/yyyy");
     db.SaveChanges();
 
     if (amount == 0)
@@ -256,8 +256,8 @@ void Withdrawal(Portfolio portfolio)
         return;
     }
 
-    portfolio.Balance   -= amount;
-    portfolio.UpdatedAt  = DateTime.Now.ToString("dd/MM/yyyy");
+    portfolio.Balance -= amount;
+    portfolio.UpdatedAt = DateTime.Now.ToString("dd/MM/yyyy");
     db.SaveChanges();
 
     Console.WriteLine($"Withdrawal of {amount:F2} successful. Remaining balance: {portfolio.Balance:F2}");
@@ -275,9 +275,9 @@ void AddNews()
 
     var news = new NewsItem
     {
-        Title       = title,
+        Title = title,
         Description = description,
-        Date        = DateTime.Now.ToString("dd/MM/yyyy")
+        Date = DateTime.Now.ToString("dd/MM/yyyy")
     };
 
     db.News.Add(news);
@@ -351,12 +351,12 @@ void CreateAsset()
 
     var asset = new Asset
     {
-        Name        = name,
-        Type        = type,
-        Price       = price,
+        Name = name,
+        Type = type,
+        Price = price,
         Description = description,
-        IsActive    = true,
-        CreatedAt   = DateTime.Now.ToString("dd/MM/yyyy")
+        IsActive = true,
+        CreatedAt = DateTime.Now.ToString("dd/MM/yyyy")
     };
 
     db.Assets.Add(asset);
@@ -549,11 +549,11 @@ void AddRisk()
 
     var risk = new Risk
     {
-        Title       = title,
+        Title = title,
         Description = description,
-        Severity    = severity,
-        AssetId     = assetId,
-        CreatedAt   = DateTime.Now.ToString("dd/MM/yyyy")
+        Severity = severity,
+        AssetId = assetId,
+        CreatedAt = DateTime.Now.ToString("dd/MM/yyyy")
     };
 
     db.Risks.Add(risk);
@@ -630,12 +630,12 @@ void ManageMarketMenu()
 
         switch (choice)
         {
-            case "1": CreateAsset();        break;
-            case "2": ManageAsset();        break;
-            case "3": DeactivateAsset();    break;
-            case "4": DeleteAsset();        break;
+            case "1": CreateAsset(); break;
+            case "2": ManageAsset(); break;
+            case "3": DeactivateAsset(); break;
+            case "4": DeleteAsset(); break;
             case "5": DisplayAssetDetail(); break;
-            default:  Console.WriteLine("Invalid option. Please try again."); break;
+            default: Console.WriteLine("Invalid option. Please try again."); break;
         }
     }
 }
@@ -654,10 +654,10 @@ void ManageNewsMenu()
 
         switch (choice)
         {
-            case "1": AddNews();     break;
+            case "1": AddNews(); break;
             case "2": DisplayNews(); break;
-            case "3": RemoveNews();  break;
-            default:  Console.WriteLine("Invalid option. Please try again."); break;
+            case "3": RemoveNews(); break;
+            default: Console.WriteLine("Invalid option. Please try again."); break;
         }
     }
 }
@@ -676,10 +676,10 @@ void ManageRisksMenu()
 
         switch (choice)
         {
-            case "1": AddRisk();      break;
+            case "1": AddRisk(); break;
             case "2": DisplayRisks(); break;
-            case "3": RemoveRisk();   break;
-            default:  Console.WriteLine("Invalid option. Please try again."); break;
+            case "3": RemoveRisk(); break;
+            default: Console.WriteLine("Invalid option. Please try again."); break;
         }
     }
 }
@@ -697,7 +697,7 @@ void GoalMenu()
 
         if (HandleNavigation(goalChoice)) { break; }
 
-        if (goalChoice == "1")      { SetSavingsGoal(); }
+        if (goalChoice == "1") { SetSavingsGoal(); }
         else if (goalChoice == "2") { SetRentGoal(); }
         else { Console.WriteLine("Invalid option. Please try again."); }
     }
@@ -705,29 +705,29 @@ void GoalMenu()
 
 void SetSavingsGoal()
 {
-    decimal  targetAmount = ReadPositiveDecimal("\nEnter target amount (X):");
-    DateTime targetDate   = ReadFutureDate("Enter target date (dd.MM.yyyy):");
+    decimal targetAmount = ReadPositiveDecimal("\nEnter target amount (X):");
+    DateTime targetDate = ReadFutureDate("Enter target date (dd.MM.yyyy):");
     SimulateAndEvaluateSavings(targetAmount, targetDate);
 }
 
 void SetRentGoal()
 {
-    decimal  monthlyRent = ReadPositiveDecimal("\nEnter desired monthly passive income (Z):");
-    DateTime fromDate    = ReadFutureDate("Enter start date for passive income (dd.MM.yyyy):");
+    decimal monthlyRent = ReadPositiveDecimal("\nEnter desired monthly passive income (Z):");
+    DateTime fromDate = ReadFutureDate("Enter start date for passive income (dd.MM.yyyy):");
     SimulateAndEvaluateRent(monthlyRent, fromDate);
 }
 
 void SimulateAndEvaluateSavings(decimal target, DateTime targetDate)
 {
-    decimal startValue           = ReadPositiveDecimal("Enter starting portfolio value:");
-    decimal monthlyContribution  = ReadPositiveDecimal("Enter monthly contribution:");
+    decimal startValue = ReadPositiveDecimal("Enter starting portfolio value:");
+    decimal monthlyContribution = ReadPositiveDecimal("Enter monthly contribution:");
 
-    int months          = Math.Max(0, ((targetDate.Year - DateTime.Today.Year) * 12) + targetDate.Month - DateTime.Today.Month);
-    decimal meanReturn  = 0.005m;
-    decimal volatility  = 0.02m;
-    int simulations     = 1000;
-    int successCount    = 0;
-    Random rng          = new Random();
+    int months = Math.Max(0, ((targetDate.Year - DateTime.Today.Year) * 12) + targetDate.Month - DateTime.Today.Month);
+    decimal meanReturn = 0.005m;
+    decimal volatility = 0.02m;
+    int simulations = 1000;
+    int successCount = 0;
+    Random rng = new Random();
 
     for (int sim = 0; sim < simulations; sim++)
     {
@@ -746,14 +746,14 @@ void SimulateAndEvaluateSavings(decimal target, DateTime targetDate)
 
 void SimulateAndEvaluateRent(decimal rent, DateTime fromDate)
 {
-    decimal startValue  = ReadPositiveDecimal("Enter starting portfolio value:");
-    int     months      = ReadPositiveInt("Enter desired duration of passive income in months:");
+    decimal startValue = ReadPositiveDecimal("Enter starting portfolio value:");
+    int months = ReadPositiveInt("Enter desired duration of passive income in months:");
 
-    decimal meanReturn  = 0.005m;
-    decimal volatility  = 0.02m;
-    int simulations     = 1000;
-    int successCount    = 0;
-    Random rng          = new Random();
+    decimal meanReturn = 0.005m;
+    decimal volatility = 0.02m;
+    int simulations = 1000;
+    int successCount = 0;
+    Random rng = new Random();
 
     for (int sim = 0; sim < simulations; sim++)
     {
@@ -776,8 +776,8 @@ void SimulateAndEvaluateRent(decimal rent, DateTime fromDate)
 
 double SampleNormal(Random rng, double mean, double stddev)
 {
-    double u1            = 1.0 - rng.NextDouble();
-    double u2            = 1.0 - rng.NextDouble();
+    double u1 = 1.0 - rng.NextDouble();
+    double u2 = 1.0 - rng.NextDouble();
     double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
     return mean + stddev * randStdNormal;
 }
@@ -810,9 +810,9 @@ void ManagePortfolioMenu(int userId)
         {
             string rebalLabel = p.RebalancingMode switch
             {
-                "monthly"   => "Monthly",
+                "monthly" => "Monthly",
                 "quarterly" => "Quarterly",
-                _           => "Off"
+                _ => "Off"
             };
             Console.WriteLine($"  (ID: {p.Id}) {p.Name}  |  Rebalancing: {rebalLabel}  |  Created: {p.CreatedAt}");
         }
@@ -826,8 +826,8 @@ void ManagePortfolioMenu(int userId)
         switch (choice)
         {
             case "1": CreateInvestmentPortfolio(userId); break;
-            case "2": SelectAndOpenPortfolio(userId);    break;
-            default:  Console.WriteLine("Invalid option. Please try again."); break;
+            case "2": SelectAndOpenPortfolio(userId); break;
+            default: Console.WriteLine("Invalid option. Please try again."); break;
         }
     }
 }
@@ -845,10 +845,10 @@ void CreateInvestmentPortfolio(int userId)
 
     var portfolio = new InvestmentPortfolio
     {
-        UserId          = userId,
-        Name            = name,
+        UserId = userId,
+        Name = name,
         RebalancingMode = "off",
-        CreatedAt       = DateTime.Now.ToString("dd/MM/yyyy")
+        CreatedAt = DateTime.Now.ToString("dd/MM/yyyy")
     };
 
     db.InvestmentPortfolios.Add(portfolio);
@@ -893,12 +893,12 @@ void OpenPortfolioMenu(InvestmentPortfolio portfolio)
 
         switch (choice)
         {
-            case "1": DisplayPortfolioDetail(portfolio);  break;
-            case "2": AddAssetToPortfolio(portfolio);     break;
-            case "3": RemoveAssetFromPortfolio(portfolio);break;
-            case "4": SetAssetWeights(portfolio);         break;
-            case "5": SetRebalancing(portfolio);          break;
-            default:  Console.WriteLine("Invalid option. Please try again."); break;
+            case "1": DisplayPortfolioDetail(portfolio); break;
+            case "2": AddAssetToPortfolio(portfolio); break;
+            case "3": RemoveAssetFromPortfolio(portfolio); break;
+            case "4": SetAssetWeights(portfolio); break;
+            case "5": SetRebalancing(portfolio); break;
+            default: Console.WriteLine("Invalid option. Please try again."); break;
         }
     }
 }
@@ -911,9 +911,9 @@ void DisplayPortfolioDetail(InvestmentPortfolio portfolio)
 
     string rebalLabel = portfolio.RebalancingMode switch
     {
-        "monthly"   => "Monthly",
+        "monthly" => "Monthly",
         "quarterly" => "Quarterly",
-        _           => "Off"
+        _ => "Off"
     };
 
     Console.WriteLine($"\n══════════════════════════════════════════════");
@@ -929,7 +929,7 @@ void DisplayPortfolioDetail(InvestmentPortfolio portfolio)
     }
 
     decimal totalWeight = items.Sum(i => i.WeightPercent);
-    decimal totalValue  = 0;
+    decimal totalValue = 0;
 
     Console.WriteLine($"\n {"Asset",-12} {"Type",-12} {"Weight%",8} {"Price",10} {"Units",8} {"Value",12}");
     Console.WriteLine($" {new string('-', 66)}");
@@ -1009,9 +1009,9 @@ void AddAssetToPortfolio(InvestmentPortfolio portfolio)
     var pa = new PortfolioAsset
     {
         InvestmentPortfolioId = portfolio.Id,
-        AssetId               = asset.Id,
-        Units                 = units,
-        WeightPercent         = 0   // weight to be set separately
+        AssetId = asset.Id,
+        Units = units,
+        WeightPercent = 0   // weight to be set separately
     };
 
     db.PortfolioAssets.Add(pa);
@@ -1153,7 +1153,7 @@ void SetRebalancing(InvestmentPortfolio portfolio)
         "1" => "off",
         "2" => "monthly",
         "3" => "quarterly",
-        _   => null
+        _ => null
     };
 
     if (newMode == null)
@@ -1197,9 +1197,9 @@ while (true)
                 switch (adminChoice)
                 {
                     case "1": ManageMarketMenu(); break;
-                    case "2": ManageNewsMenu();   break;
-                    case "3": ManageRisksMenu();  break;
-                    default:  Console.WriteLine("Invalid option. Please try again."); break;
+                    case "2": ManageNewsMenu(); break;
+                    case "3": ManageRisksMenu(); break;
+                    default: Console.WriteLine("Invalid option. Please try again."); break;
                 }
             }
         }
@@ -1221,14 +1221,14 @@ while (true)
 
                 switch (userChoice)
                 {
-                    case "1": ManagePortfolioMenu(loggedInUser.Id);               break;
-                    case "2": DepositsAndWithdrawalsMenu(loggedInUser.Id);         break;
-                    case "3": Console.WriteLine("Growth simulation selected");     break;
-                    case "4": DisplayNews();                                        break;
-                    case "5": DisplayRisks();                                       break;
-                    case "6": DisplayAssets(showInactive: false);                   break;
-                    case "7": GoalMenu();                                           break;
-                    default:  Console.WriteLine("Invalid option. Please try again."); break;
+                    case "1": ManagePortfolioMenu(loggedInUser.Id); break;
+                    case "2": DepositsAndWithdrawalsMenu(loggedInUser.Id); break;
+                    case "3": Console.WriteLine("Growth simulation selected"); break;
+                    case "4": DisplayNews(); break;
+                    case "5": DisplayRisks(); break;
+                    case "6": DisplayAssets(showInactive: false); break;
+                    case "7": GoalMenu(); break;
+                    default: Console.WriteLine("Invalid option. Please try again."); break;
                 }
             }
         }
@@ -1241,48 +1241,48 @@ while (true)
 
 class User
 {
-    public int    Id           { get; set; }
-    public string Username     { get; set; }
+    public int Id { get; set; }
+    public string Username { get; set; }
     public string PasswordHash { get; set; }
-    public string Role         { get; set; }
+    public string Role { get; set; }
 }
 
 class NewsItem
 {
-    public int    Id          { get; set; }
-    public string Title       { get; set; }
+    public int Id { get; set; }
+    public string Title { get; set; }
     public string Description { get; set; }
-    public string Date        { get; set; }
+    public string Date { get; set; }
 }
 
 class Asset
 {
-    public int     Id          { get; set; }
-    public string  Name        { get; set; }
-    public string  Type        { get; set; }
-    public decimal Price       { get; set; }
-    public string  Description { get; set; }
-    public bool    IsActive    { get; set; }
-    public string  CreatedAt   { get; set; }
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Type { get; set; }
+    public decimal Price { get; set; }
+    public string Description { get; set; }
+    public bool IsActive { get; set; }
+    public string CreatedAt { get; set; }
 }
 
 class Risk
 {
-    public int    Id          { get; set; }
-    public string Title       { get; set; }
+    public int Id { get; set; }
+    public string Title { get; set; }
     public string Description { get; set; }
-    public string Severity    { get; set; }   // low / medium / high
-    public int?   AssetId     { get; set; }   // nullable — general risk if null
-    public string CreatedAt   { get; set; }
+    public string Severity { get; set; }   // low / medium / high
+    public int? AssetId { get; set; }   // nullable — general risk if null
+    public string CreatedAt { get; set; }
 }
 
 class Portfolio
 {
-    public int     Id                  { get; set; }
-    public int     UserId              { get; set; }
-    public decimal Balance             { get; set; }
-    public decimal MonthlyDeposit      { get; set; }  // 0 = not set
-    public string  UpdatedAt           { get; set; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public decimal Balance { get; set; }
+    public decimal MonthlyDeposit { get; set; }  // 0 = not set
+    public string UpdatedAt { get; set; }
 }
 
 /// <summary>
@@ -1290,12 +1290,12 @@ class Portfolio
 /// </summary>
 class InvestmentPortfolio
 {
-    public int    Id                { get; set; }
-    public int    UserId            { get; set; }
-    public string Name              { get; set; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public string Name { get; set; }
     /// <summary>off | monthly | quarterly</summary>
-    public string RebalancingMode   { get; set; } = "off";
-    public string CreatedAt         { get; set; }
+    public string RebalancingMode { get; set; } = "off";
+    public string CreatedAt { get; set; }
 
     // Navigation
     public List<PortfolioAsset> PortfolioAssets { get; set; } = new();
@@ -1306,27 +1306,27 @@ class InvestmentPortfolio
 /// </summary>
 class PortfolioAsset
 {
-    public int     Id                    { get; set; }
-    public int     InvestmentPortfolioId { get; set; }
-    public int     AssetId               { get; set; }
-    public decimal Units                 { get; set; }
+    public int Id { get; set; }
+    public int InvestmentPortfolioId { get; set; }
+    public int AssetId { get; set; }
+    public decimal Units { get; set; }
     /// <summary>Target allocation weight in percent (0–100). All rows for a portfolio must sum to 100.</summary>
-    public decimal WeightPercent         { get; set; }
+    public decimal WeightPercent { get; set; }
 
     // Navigation
     public InvestmentPortfolio InvestmentPortfolio { get; set; }
-    public Asset               Asset               { get; set; }
+    public Asset Asset { get; set; }
 }
 
 class AppDbContext : DbContext
 {
-    public DbSet<User>                Users                { get; set; }
-    public DbSet<NewsItem>            News                 { get; set; }
-    public DbSet<Asset>               Assets               { get; set; }
-    public DbSet<Risk>                Risks                { get; set; }
-    public DbSet<Portfolio>           Portfolios           { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<NewsItem> News { get; set; }
+    public DbSet<Asset> Assets { get; set; }
+    public DbSet<Risk> Risks { get; set; }
+    public DbSet<Portfolio> Portfolios { get; set; }
     public DbSet<InvestmentPortfolio> InvestmentPortfolios { get; set; }
-    public DbSet<PortfolioAsset>      PortfolioAssets      { get; set; }
+    public DbSet<PortfolioAsset> PortfolioAssets { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite("Data Source=app.db");
