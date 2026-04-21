@@ -2991,26 +2991,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\manuy\\.nuget\\packages\\": {}
+    "/Users/uuodankrig/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\manuy\\RiderProjects\\Financeapp\\Financeapp\\Financeapp.csproj",
+      "projectUniqueName": "/Users/uuodankrig/Documents/School/Finance-app/Financeapp.csproj",
       "projectName": "Financeapp",
-      "projectPath": "C:\\Users\\manuy\\RiderProjects\\Financeapp\\Financeapp\\Financeapp.csproj",
-      "packagesPath": "C:\\Users\\manuy\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\manuy\\RiderProjects\\Financeapp\\Financeapp\\obj\\",
+      "projectPath": "/Users/uuodankrig/Documents/School/Finance-app/Financeapp.csproj",
+      "packagesPath": "/Users/uuodankrig/.nuget/packages/",
+      "outputPath": "/Users/uuodankrig/Documents/School/Finance-app/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\manuy\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/uuodankrig/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -3029,7 +3027,7 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net10.0": {
@@ -3066,7 +3064,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",
