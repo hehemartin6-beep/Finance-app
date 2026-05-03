@@ -3,12 +3,9 @@ Potřebné balíčky:
 — Microsoft.EntityFrameworkCore.Tools | 10.0.5
 — BCrypt.Net.BCrypt | 4.1.0
 
-3 Bod
-Mark Manuylov - velké potíže s Gitem, nešlo pushovat. Zpraveno 21.4.
+Poslední milník
+Mark Manuylov - práce na prezentaci 1.5h, konzultovani jak ma vypadat historie, pokus o branchovani 
 
-Dino Spasov - branchování a přidání vkladů a výběrů 
+Dino Spasov - přidání historie a ostatních issues co jsme měli 3h
 
-
-Research TER a daní + Monte Carlo simulace
-Potřebné úpravy máme duplikáty ve funkcích u usera 
-Historie bude přidáná brzy
+Prezentace bude v Canve
